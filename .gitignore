@@ -54,6 +54,9 @@ halo.map
 /link/objs.rsp
 /link/stubs.c
 /link/stubbed_symbols.txt
+# a bake run from this checkout: what the guided bake and the installer make
+/bake/COPY-TO-MEMORY-STICK/
+/bake/out/
 
 # 3. Firmware or other third-party binaries (never ours to publish).
 flash0/

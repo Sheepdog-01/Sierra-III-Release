@@ -17,6 +17,8 @@ runs bake.py.
     halo-psp-bake --setup     only set up the environment and check the tools
                               (with --compare-old: the proof's environment)
     halo-psp-bake --help      the bake's options (no setup needed)
+    halo-psp-bake --installer the installer window (installer/): the guided
+                              bake, then a copy to the Memory Stick
 
 --compare-old (the new bake's proof, docs/bake_changes.md) also installs
 scikit-learn and triangle, which have no packages for Python 3.14."""
@@ -167,6 +169,11 @@ def launch(args):
     # every script reads and writes text as UTF-8, whatever the system's
     # code page (Windows' cp1252 can't print every tag name or log line)
     env['PYTHONUTF8'] = '1'
+    if args == ['--installer']:
+        # the installer window, which runs the guided bake below as its own
+        # process
+        import installer
+        sys.exit(installer.main())
     if not args or '--guided' in args:
         import guided
         sys.exit(guided.main([a for a in args if a != '--guided'], sys.modules[__name__]))

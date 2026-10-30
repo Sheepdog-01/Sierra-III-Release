@@ -30,7 +30,8 @@ READERS_LINE = "'bake', 'lib'))  # the bake's readers"
 # and where its source is. Only components whose texts the build found are
 # listed in the bundle's README.
 COMPONENTS = [
-    ('the bake scripts (bake.py, launcher.py, xiso.py, lib/)', 'Sierra-III, the Halo PSP port: see its repository',
+    ('the bake scripts (bake.py, guided.py, launcher.py, xiso.py, lib/, installer/, and the "Bake Halo" and '
+     '"Install to PSP" files)', 'Sierra-III, the Halo PSP port: see its repository',
      None, 'here, as they are'),
     ('Invader (invader/bin: invader-build, invader-extract, invader-info), the port\'s fork',
      'GPL-3.0-only (its ADPCM encoder: BSD-3-Clause; its Xbox ADPCM changes: MIT)', 'invader',
@@ -81,6 +82,14 @@ TARGET_EXE = {'windows': '.exe', 'linux': '', 'macos': ''}
 # what the player double-clicks (the wrapper, halo-psp-bake or .cmd, under
 # the name each system runs on a double-click)
 START = {'linux': 'bake-halo.sh', 'macos': 'Bake Halo.command', 'windows': 'Bake Halo.cmd'}
+# the installer window's double-click file: the wrapper above, with --installer
+INSTALL = {'linux': 'install-to-psp.sh', 'macos': 'Install to PSP.command', 'windows': 'Install to PSP.cmd'}
+INSTALL_TEXT = {
+    'windows': '@echo off\nrem The installer window (installer/), with the Python the bake finds.\n'
+               '"%%~dp0%s" --installer\n',
+    'posix': '#!/bin/sh\n# The installer window (installer/), with the Python the bake finds.\n'
+             'exec "$(cd "$(dirname "$0")" && pwd)/%s" --installer\n',
+}
 TOP = 'halo-psp-bake'
 # the guided bake's two input folders (guided.py), each with a note of what goes in it
 INPUTS = {
@@ -145,6 +154,12 @@ def assemble(tools, out, target):
     # cmd.exe finds its labels reliably only in a file with Windows' line endings
     with open(os.path.join(out, START[target]), 'w', encoding='utf-8', newline=newline) as f:
         f.write(text)
+    with open(os.path.join(out, INSTALL[target]), 'w', encoding='utf-8', newline=newline) as f:
+        f.write(INSTALL_TEXT['windows' if target == 'windows' else 'posix'] % START[target])
+    executable(os.path.join(out, INSTALL[target]))
+    for path in sorted(glob.glob(os.path.join(bake, 'installer', '*.py'))):
+        if not os.path.basename(path).startswith('test_'):
+            copy(path, os.path.join(out, 'installer', os.path.basename(path)))
     executable(os.path.join(out, START[target]))
     if target == 'linux':
         # the command's own name, which automated runs call

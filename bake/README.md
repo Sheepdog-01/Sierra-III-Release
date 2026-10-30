@@ -78,6 +78,37 @@ To bake again (a new release), put the new zip in step 2 and double-click
 again: `COPY-TO-MEMORY-STICK` is made afresh each time. On the stick, delete
 `halo/maps` before you copy the new one in, so no old pack is left behind.
 
+## Or with a window: the installer
+
+`Install to PSP.cmd` (Windows), `Install to PSP.command` (macOS) or
+`install-to-psp.sh` (Linux) opens the same bake in a window, and then copies
+it to the Memory Stick for you:
+
+1. **Your game:** where the maps come from (the Xbox disc; a Halo PC option
+   is shown but switched off for now), and that you own it.
+2. **Your files:** your disc image and the release zip, chosen with a button
+   instead of put in a folder. Already baked with *Bake Halo*? Tick the box
+   and choose its `COPY-TO-MEMORY-STICK` instead.
+3. **Bake the maps:** the guided bake above, unchanged, with its four stages
+   shown as it goes. Its output and `bake-log.txt` go to `out` in this folder.
+4. **Memory Stick:** only removable FAT32 or exFAT drives with
+   `MEMSTICK.IND` or a `PSP` folder are listed. It writes `PSP/GAME/halo/`
+   and `halo/` (the multiplayer build: `PSP/GAME/halomp/`, `halomp/` and the
+   maps in `halo/`), merged with what is there: an older `halo/maps` is
+   replaced, saves already on the stick are kept, and ARK-4's files,
+   `SEPLUGINS` and other games are never touched. Every file is copied to
+   `SIERRA-III-STAGING` on the stick first and read back before anything is
+   moved into place; a copy stopped or failed before then leaves the stick as it
+   was. The old `halo/bake.txt` comes out first and the new one goes in last,
+   so a copy interrupted while files move into place leaves maps the game
+   refuses until you install again.
+5. **Play:** eject the stick safely, then start the game from the PSP's
+   *Game* menu.
+
+It uses the Python the bake finds, with its Tk. Some Linux systems' Python
+comes without Tk (`python3-tk`); the installer then says so, and *Bake Halo*
+works as before.
+
 ## Which disc image it was made from
 
 Every bake fingerprints what it reads and says so at the start of its log, then writes the same lines into `halo/bake.txt` beside the format stamp:
@@ -176,6 +207,9 @@ one. Builds that read the same format share a bake.
   `halo-psp-bake`, the same file under the command's own name),
   `launcher.py`, `guided.py`, `bake.py`, `xiso.py`, `lib/`: the bake itself
   (the Halo PSP port's own scripts).
+- `Install to PSP.cmd`, `Install to PSP.command` or `install-to-psp.sh`, and
+  `installer/`: the installer window (the port's own scripts too; its look
+  is drawn by Tk, with no image or font files).
 - `invader/bin`: Invader (`invader-build`, `invader-extract`, `invader-info`),
   the port's fork, GPLv3. Its full source is `source/invader-src.tar.gz`, and
   `source/invader-psp-fork.patch` is the change against upstream Invader
@@ -187,4 +221,5 @@ one. Builds that read the same format share a bake.
   source is; the licence texts are beside it.
 - Made by the bake, in this folder only: `.venv` (the Python libraries),
   `.python` (the portable Python, if it downloaded one), `temp` (while it
-  works), `COPY-TO-MEMORY-STICK` and `bake-log.txt`.
+  works), `COPY-TO-MEMORY-STICK` and `bake-log.txt`; the installer's bake
+  goes to `out` instead.
