@@ -636,8 +636,11 @@ counts the ones it binds anyway) */
 #define GE_PRETOUCH_PASSED(key, kind) do { } while (0)
 #endif
 /* a frame's boundaries are written down only in a game: the menus and loads
-run as with gedefer alone */
-#define INFLIGHT_RECORDING() (inflight_on && DEFER_RECORDING() && psp_game_running())
+run as with gedefer alone; and a frame after the power switch asked to sleep
+isn't in flight, so it ends with its list finished and the GE done, where the
+sleep is carried out (psp_sleepguard.c, B41) */
+extern int psp_sleep_frame;
+#define INFLIGHT_RECORDING() (inflight_on && DEFER_RECORDING() && psp_game_running() && !psp_sleep_frame)
 
 int psp_keep(const char *name);
 void psp_ge_model_begin(const float *node_matrices, int node_matrix_count, float u_scale, float v_scale,
@@ -2421,6 +2424,12 @@ static void defer_drain(void)
 	inflight_pending = 0;
 	inflight_show();
 }
+
+/* B41 (psp_sleepguard.c): a sleep halo_sleep.prx put off is noticed at an
+in-flight frame's end and carried out at the end of the next, which isn't in
+flight */
+void psp_sleepguard_notice(void);
+void psp_sleepguard_frame(void);
 
 /* geinflight: the main CPU's part of a frame's end, once its list has ended
 and the GE has been given all of it */
@@ -6183,6 +6192,11 @@ void psp_ge_window_begin(const float *position, const float *forward, const floa
 			return;
 		}
 	}
+	/* B41: the frame after a switch press isn't in flight; the one before it
+	may still be out with the ME, whose replay sets frame_open: it is carried
+	out first, as the in-flight branch above would */
+	if (psp_sleep_frame && (inflight_pending || inflight_me_out))
+		inflight_sync();
 	if (frame_open)
 		return;
 	GE_DEFER_DRAIN(); /* build 112: gedefer */
@@ -23502,7 +23516,8 @@ void psp_ge_frame_end(void)
 		else
 			inflight_hand_over();
 		chunk_stopped = 0;
-		chunk_frame = chunk_wanted();
+		psp_sleepguard_notice();
+		chunk_frame = psp_sleep_frame ? 0 : chunk_wanted();
 		chunk_published = 0;
 		psp_tex_chunking = chunk_frame;
 		psp_tex_chunk_missed = 0;
@@ -23519,12 +23534,36 @@ void psp_ge_frame_end(void)
 	after a sleep (a slot job still out puts it off to a later frame end) */
 	psp_me_wake_poll();
 	if (!frame_open)
+	{
+		psp_sleepguard_notice();
 		return;
+	}
 	psp_me_ring_test(); /* "meringtest" (psp_me.c); off: one test a frame */
 	psp_me_batch_test(); /* "mebatchtest" (psp_me.c); likewise */
 	show2_settle(SHOW2_OTHER);
 	frame_end_list();
 	frame_end_show();
+	/* B41: the list finished and the GE given the frame: a sleep put off is
+	carried out here */
+	psp_sleepguard_frame();
+}
+
+/* B41: the records' room given back with the volatile partition, by the game
+thread itself between frames (no record is being written) */
+void psp_ge_inflight_room_before_sleep(void)
+{
+	if (inflight_room)
+		inflight_room_away = 1;
+}
+
+/* B41, after a sleep the game thread readied itself (psp_sleepguard.c): the
+records' room checked as a thread waiting at its record would have (it
+never waited: it was the one that slept) */
+void psp_ge_inflight_room_after_sleep(void)
+{
+	inflight_room_away = 0;
+	if (inflight_room)
+		inflight_room_check(0);
 }
 
 /* the frame's end in two parts, as its window's begin: the list's (its last

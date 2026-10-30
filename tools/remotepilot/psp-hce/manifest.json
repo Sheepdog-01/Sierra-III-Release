@@ -1,0 +1,66 @@
+{
+  "id": "psp-hce",
+  "name": "PSP · Halo CE (Sierra-III)",
+  "order": 3,
+  "mark": "PSP",
+  "transport": "python-v1",
+  "status": "hardware-validation-needed",
+  "capabilities": [
+    "screenshot",
+    "stream",
+    "controller",
+    "input",
+    "report",
+    "log",
+    "perf",
+    "files",
+    "backup"
+  ],
+  "display": {
+    "layout": "psp",
+    "width": 480,
+    "height": 272
+  },
+  "buttons": [
+    "CROSS",
+    "CIRCLE",
+    "SQUARE",
+    "TRIANGLE",
+    "UP",
+    "DOWN",
+    "LEFT",
+    "RIGHT",
+    "L",
+    "R",
+    "START",
+    "SELECT"
+  ],
+  "buttonBits": {
+    "CROSS": 0,
+    "CIRCLE": 1,
+    "SQUARE": 2,
+    "TRIANGLE": 3,
+    "L": 4,
+    "R": 5,
+    "SELECT": 8,
+    "START": 9,
+    "UP": 12,
+    "DOWN": 13,
+    "LEFT": 14,
+    "RIGHT": 15
+  },
+  "setup": {
+    "deviceConfigPath": "ms0:/remotepilot/remotepilot.cfg"
+  },
+  "theme": {
+    "background": "#06101d",
+    "surface": "#10223a",
+    "surface2": "#0a1729",
+    "line": "#2f5f8f",
+    "text": "#e6f3ff",
+    "muted": "#9dbbd6",
+    "accent": "#4fb8ff",
+    "accent2": "#9fe0ff",
+    "glow": "#1f8fe0"
+  }
+}

@@ -154,7 +154,7 @@ You copy one folder's contents: `COPY-TO-MEMORY-STICK` holds the **game** (the b
 
 | Path | What | From |
 |---|---|---|
-| `PSP/GAME/halo/` | the game: `EBOOT.PBP` (with your menu sound), `halo_crash.prx`, `halo_profile.prx`, `LICENSE-mecore.md` | the build zip, through the bake |
+| `PSP/GAME/halo/` | the game: `EBOOT.PBP` (with your menu sound), `halo_crash.prx`, `halo_profile.prx`, `halo_sleep.prx`, `LICENSE-mecore.md` | the build zip, through the bake |
 | `halo/presets.txt` | the launch menu's presets (when the build has one) | the build zip, through the bake |
 | `halo/maps/` | each map's `.map` and its packs (`.ptex`, `_track.ptex`, `.pgeo`, `.pstn`) | your bake |
 | `halo/chant.adp` | the loading screen's chant | your bake |

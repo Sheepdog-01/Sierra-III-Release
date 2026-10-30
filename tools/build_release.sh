@@ -19,7 +19,8 @@
 #
 # writes into the output folder:
 #   halo_psp_<LABEL>.zip   PSP/GAME/halo/ (EBOOT.PBP, halo_crash.prx,
-#                          halo_profile.prx, LICENSE-mecore.md, licenses/),
+#                          halo_profile.prx, halo_sleep.prx,
+#                          LICENSE-mecore.md, licenses/),
 #                          halo/presets.txt when psp/presets.txt exists, and
 #                          the campaign's all-levels profile in halo/save/
 #   halo.elf, halo.map     the linked program and its link map
@@ -99,9 +100,9 @@ unlock_entry
 log "Sierra-III $(git -C "$SRC" rev-parse HEAD), $JOBS jobs"
 (cd "$SRC" && HALO_REPO="$ENGINE_DIR" PSP_OUT="$OUT/build" PSP_MECORE="$MECORE_DIR" \
     python3 psp_build.py --jobs "$JOBS") >> "$OUT/build.log" 2>&1 || { tail -30 "$OUT/build.log"; exit 1; }
-# the two helper modules, built from copies so the checkout stays untouched
+# the three helper modules, built from copies so the checkout stays untouched
 # (the same bytes as built in place)
-for module in crash profile; do
+for module in crash profile sleep; do
     rm -rf "$OUT/$module"; cp -r "$SRC/psp/$module" "$OUT/$module"
     make -C "$OUT/$module" clean >> "$OUT/build.log" 2>&1
     make -C "$OUT/$module" >> "$OUT/build.log" 2>&1
@@ -109,7 +110,8 @@ done
 
 # --- the release zip -----------------------------------------------------------
 pkg=$OUT/pkg; rm -rf "$pkg"; mkdir -p "$pkg/PSP/GAME/halo"
-cp "$OUT/build/EBOOT.PBP" "$OUT/crash/halo_crash.prx" "$OUT/profile/halo_profile.prx" "$pkg/PSP/GAME/halo/"
+cp "$OUT/build/EBOOT.PBP" "$OUT/crash/halo_crash.prx" "$OUT/profile/halo_profile.prx" "$OUT/sleep/halo_sleep.prx" \
+    "$pkg/PSP/GAME/halo/"
 cp "$MECORE_DIR/LICENSE.md" "$pkg/PSP/GAME/halo/LICENSE-mecore.md"
 # the toolchain's libraries linked into the EBOOT, whose licences ask for
 # their notices to travel with the binary (pspsdk BSD, libpspvram MIT; newlib
