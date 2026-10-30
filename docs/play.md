@@ -199,6 +199,8 @@ prints `the build is on the stick` and lists the three files. On Windows, check 
    | select + right | screenshot (to `halo/shots/`) |
    | start | pause menu |
 
+   **The PSP shooters' layout:** the launch menu's `faceaim` word (hold L as the game starts, then the options page) swaps the nub and the face buttons: the nub moves and strafes, triangle / cross aim up / down and square / circle aim left / right. A tapped face button nudges the aim; held, it speeds up to a full turn in a third of a second. The other buttons stay as above, and the on-screen prompts follow.
+
    Halo's own control settings (presets, look sensitivity, invert) apply on top. The performance readout (frame rate and timings) is off; the launch menu's `overlay` word, or the in-game debug menu, turns it on.
 6. **How fast:** see "What to expect", below. The heaviest stretches run slowly; this is the port's open work.
 7. **To quit:** HOME → **ARK-4 Kommander** → **Exit**.

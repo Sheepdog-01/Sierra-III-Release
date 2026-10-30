@@ -204,6 +204,11 @@ every Halo layout works with this one physical layout
   select + L          -> right shoulder (switch grenades)
   select + right      -> a screenshot; select + left -> the debug menu
   start               -> start
+With "faceaim" (the launch menu's options page) the nub and the face buttons
+trade places, as in the PSP's own shooters (face_aim, below):
+  nub                 -> left stick (move and strafe)
+  triangle / cross    -> right stick up / down (aim)
+  square / circle     -> right stick left / right (aim)
 In Halo's menus the buttons are the pad's own (cross A, circle B, square X,
 triangle Y; the D-pad and the nub move), and select tapped alone is back
 (menu_select_update). */
@@ -457,6 +462,9 @@ int psp_button_glyph(int icon, int menus, unsigned short cell[4])
 	if (!fixed)
 		menus = in_menus();
 	glyph = (menus ? glyphs_in_menus : glyphs_in_play)[icon];
+	/* faceaim: the move stick is the nub, the look stick the face buttons */
+	if (!menus && icon >= PSP_BUTTON_ICONS - 2 && psp_keep("faceaim"))
+		glyph = icon == PSP_BUTTON_ICONS - 2 ? PSP_GLYPH_NUB : PSP_GLYPH_FACE;
 	if (cell)
 		memcpy(cell, psp_glyph_cells[glyph], sizeof(psp_glyph_cells[glyph]));
 	return glyph;
@@ -718,8 +726,50 @@ static Sint16 stick(unsigned char value)
 	return (Sint16)(centred * 256 > 32767 ? 32767 : centred * 256 < -32768 ? -32768 : centred * 256);
 }
 
+/* ---------- "faceaim": the layout of the PSP's own shooters (Quake's ports,
+Halo Revamped): the nub moves and strafes, the face buttons aim. A face
+button starts the look at 35% of a full turn rate (past the engine's dead
+zone, 9,000 of 32,767) and reaches full rate after a third of a second held,
+so a tap nudges the aim and a hold turns; the profile's look sensitivity and
+invert apply as before. Off unless keep.txt names it */
+#define FACE_AIM_START 0.35f
+#define FACE_AIM_RAMP_US 330000u
+
+static Sint16 face_aim_axis(unsigned int buttons, unsigned int negative, unsigned int positive, unsigned int *since)
+{
+	unsigned int now = sceKernelGetSystemTimeLow();
+	int direction = (buttons & negative) ? -1 : (buttons & positive) ? 1 : 0;
+	float share;
+
+	if (!direction)
+	{
+		*since = 0;
+		return 0;
+	}
+	if (!*since)
+		*since = now | 1u;
+	share = FACE_AIM_START + (1.0f - FACE_AIM_START) * (float)(now - *since) / (float)FACE_AIM_RAMP_US;
+	if (share > 1.0f)
+		share = 1.0f;
+	return (Sint16)((float)direction * share * 32767.0f);
+}
+
+/* the nub as a stick, calibrated if nub.txt says so */
+static Sint16 nub_axis(const SceCtrlData *pad, int y_axis)
+{
+	if (nub_calibrated > 0)
+	{
+		Sint16 x, y;
+
+		nub_calibrated_axes(pad->Lx, pad->Ly, &x, &y);
+		return y_axis ? y : x;
+	}
+	return stick(y_axis ? pad->Ly : pad->Lx);
+}
+
 Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
+	static unsigned int aim_x_since, aim_y_since;
 	SceCtrlData pad = read_controls();
 
 	(void)gamepad;
@@ -733,6 +783,18 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 		default: return 0;
 		}
 	}
+	if (psp_keep("faceaim"))
+		switch (axis)
+		{
+		case SDL_GAMEPAD_AXIS_LEFTX: return nub_axis(&pad, 0);
+		case SDL_GAMEPAD_AXIS_LEFTY: return nub_axis(&pad, 1);
+		case SDL_GAMEPAD_AXIS_RIGHTX:
+			return face_aim_axis(pad.Buttons, PSP_CTRL_SQUARE, PSP_CTRL_CIRCLE, &aim_x_since);
+		case SDL_GAMEPAD_AXIS_RIGHTY:
+			return face_aim_axis(pad.Buttons, PSP_CTRL_TRIANGLE, PSP_CTRL_CROSS, &aim_y_since);
+		default:
+			break;
+		}
 	switch (axis)
 	{
 	case SDL_GAMEPAD_AXIS_LEFTX:

@@ -65,6 +65,7 @@ decalall, flatshade, tdump, visdump, noboxtest, detailallfar, levelcompact and
 interpolation left the menu. They still work typed into keep.txt, and the
 menu keeps them there as "other words" */
 static struct option options[] = {
+	{ "faceaim", "controls: nub moves, face buttons aim (PSP shooters)", 0, 0 },
 	{ "nearauto", "near plane: by what is near the eye", 1, 0 },
 	{ "nooverlay", "performance overlay OFF at start", 0, 0 }, { "overlay", "performance overlay ON at start (a release starts without it)", 0, 0 },
 	{ "nomeaudio", "sound mixed on the main CPU, not the ME", 0, 0 },
